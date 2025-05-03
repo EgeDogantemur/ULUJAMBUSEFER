@@ -3,12 +3,14 @@ using System.Collections;
 
 public class PushableObject : MonoBehaviour
 {
+    [Header("İtme Ayarları")]
     [SerializeField] private float pushForce = 5f;
+
+    [Header("Tutma Ayarları")]
     [SerializeField] private float holdDistance = 1f;
-    [SerializeField] private float smoothSpeed = 20f;
+    [SerializeField] private float smoothSpeed = 10f;
     [SerializeField] private float interactionCooldown = 0.5f;
-    [SerializeField] private float maxSpeed = 10f; // Maksimum takip hızı
-    [SerializeField] private float grabStability = 5f; // Tutma anında objenin ne kadar sert tutulacağı
+    [SerializeField] private float grabStability = 5f;
 
     private bool isBeingHeld = false;
     private Transform playerTransform;
@@ -19,47 +21,36 @@ public class PushableObject : MonoBehaviour
     private PlayerController playerController;
     private bool wasKinematic;
     private float holdStartTime;
-    
-    // Input System referansı
     private InputSystemWrapper inputManager;
+    private Vector3 originalScale;
+    private Quaternion originalRotation;
 
     private void Start()
     {
         rb = GetComponent<Rigidbody>();
         wasKinematic = rb.isKinematic;
+        originalScale = transform.localScale;
+        originalRotation = transform.rotation;
         
-        // Input Manager referansını al
         inputManager = InputSystemWrapper.Instance;
         if (inputManager == null)
         {
-            Debug.LogError("InputSystemWrapper bulunamadı! Lütfen sahnede bir InputSystemWrapper olduğundan emin olun.");
+            Debug.LogError("InputSystemWrapper bulunamadı!");
         }
     }
 
     private void Update()
     {
-        if (inputManager != null)
+        if (inputManager == null) return;
+
+        // E tuşuna basıldığında tutma/bırakma
+        if (Input.GetKeyDown(KeyCode.E) && isPlayerInTrigger && canInteract)
         {
-            // F tuşuna basıldığında tutma işlemini başlat
-            if (!isBeingHeld && isPlayerInTrigger && inputManager.GetHoldPressed() && canInteract)
+            if (!isBeingHeld)
             {
                 HoldObject(playerTransform);
             }
-            // F tuşu bırakıldığında nesneyi bırak
-            else if (isBeingHeld && !inputManager.GetHoldHeld())
-            {
-                ReleaseObject();
-                StartCoroutine(InteractionCooldown());
-            }
-        }
-        else
-        {
-            // Eski Input sistemi ile yedek kontroller
-            if (!isBeingHeld && isPlayerInTrigger && Input.GetKeyDown(KeyCode.F) && canInteract)
-            {
-                HoldObject(playerTransform);
-            }
-            else if (isBeingHeld && !Input.GetKey(KeyCode.F))
+            else
             {
                 ReleaseObject();
                 StartCoroutine(InteractionCooldown());
@@ -71,18 +62,43 @@ public class PushableObject : MonoBehaviour
     {
         if (isBeingHeld && holdPoint != null)
         {
-            // Tutma noktasına doğru hareket et
+            // Tutma noktasına doğru hareket
             Vector3 targetPosition = holdPoint.position;
-            
-            // Tutma süresine bağlı olarak gücü değiştir
             float holdTime = Time.time - holdStartTime;
-            float strength = Mathf.Min(1.0f, holdTime * grabStability); // Zaman geçtikçe daha sağlam tutma
+            float strength = Mathf.Min(1.0f, holdTime * grabStability);
             
-            // Rigidbody'yi doğrudan hareket ettir
-            rb.MovePosition(Vector3.Lerp(rb.position, targetPosition, strength * Time.fixedDeltaTime * smoothSpeed));
+            // Sadece X ve Z eksenlerinde hareket
+            Vector3 currentPos = transform.position;
+            Vector3 targetPos = new Vector3(targetPosition.x, currentPos.y, targetPosition.z);
             
-            // Rotasyonu güncelle
+            rb.MovePosition(Vector3.Lerp(currentPos, targetPos, strength * Time.fixedDeltaTime * smoothSpeed));
             rb.MoveRotation(Quaternion.Slerp(rb.rotation, holdPoint.rotation, strength * Time.fixedDeltaTime * smoothSpeed));
+        }
+    }
+
+    private void OnCollisionStay(Collision collision)
+    {
+        if (collision.gameObject.CompareTag("Player") && !isBeingHeld)
+        {
+            // İtme mantığı
+            Vector3 moveInput = Vector3.zero;
+
+            if (inputManager != null)
+            {
+                moveInput = inputManager.GetMovementInput();
+            }
+            else
+            {
+                float horizontal = Input.GetAxis("Horizontal");
+                float vertical = Input.GetAxis("Vertical");
+                moveInput = new Vector3(horizontal, 0, vertical);
+            }
+
+            if (moveInput.magnitude > 0)
+            {
+                Vector3 pushDirection = new Vector3(moveInput.x, 0, moveInput.z).normalized;
+                rb.AddForce(pushDirection * pushForce, ForceMode.Force);
+            }
         }
     }
 
@@ -93,8 +109,7 @@ public class PushableObject : MonoBehaviour
             isPlayerInTrigger = true;
             playerTransform = other.transform;
             playerController = other.GetComponent<PlayerController>();
-            
-            Debug.Log("PushableObject: Oyuncu objeye yaklaştı. Tutmak için F tuşunu basılı tutun.");
+            Debug.Log("Kutuyu tutmak için E tuşuna basın");
         }
     }
 
@@ -102,8 +117,7 @@ public class PushableObject : MonoBehaviour
     {
         if (other.CompareTag("Player"))
         {
-            // Eğer obje hala tutuluyorsa, bırak
-            if (isBeingHeld && playerController != null)
+            if (isBeingHeld)
             {
                 ReleaseObject();
             }
@@ -114,35 +128,10 @@ public class PushableObject : MonoBehaviour
         }
     }
 
-    private void OnCollisionStay(Collision collision)
-    {
-        if (collision.gameObject.CompareTag("Player") && !isBeingHeld)
-        {
-            if (inputManager != null)
-            {
-                Vector3 moveInput = inputManager.GetMovementInput();
-                if (moveInput.magnitude > 0)
-                {
-                    Vector3 pushDirection = new Vector3(moveInput.x, 0, moveInput.z).normalized;
-                    rb.AddForce(pushDirection * pushForce, ForceMode.Force);
-                }
-            }
-            else
-            {
-                float horizontal = Input.GetAxis("Horizontal");
-                float vertical = Input.GetAxis("Vertical");
-
-                if (horizontal != 0 || vertical != 0)
-                {
-                    Vector3 pushDirection = new Vector3(horizontal, 0, vertical).normalized;
-                    rb.AddForce(pushDirection * pushForce, ForceMode.Force);
-                }
-            }
-        }
-    }
-
     private void HoldObject(Transform player)
     {
+        if (!canInteract) return;
+
         isBeingHeld = true;
         playerTransform = player;
         holdStartTime = Time.time;
@@ -150,7 +139,6 @@ public class PushableObject : MonoBehaviour
         PlayerController playerController = player.GetComponent<PlayerController>();
         if (playerController != null)
         {
-            // Eğer daha önce farklı bir playerController referansımız varsa, onu temizleyelim
             if (this.playerController != null && this.playerController != playerController)
             {
                 this.playerController.SetHoldingObject(false);
@@ -159,17 +147,14 @@ public class PushableObject : MonoBehaviour
             this.playerController = playerController;
             holdPoint = playerController.GetNearestHoldPoint(transform.position);
             playerController.SetHoldingObject(true);
-            Debug.Log("PushableObject: Obje tutuldu, zıplama devre dışı bırakıldı");
         }
         
-        // Rigidbody ayarları
         wasKinematic = rb.isKinematic;
-        rb.isKinematic = true;  // Tamamen kinematik kontrole geçirdik
+        rb.isKinematic = true;
         rb.useGravity = false;
         rb.linearVelocity = Vector3.zero;
         rb.angularVelocity = Vector3.zero;
         
-        // Daha güçlü bir tutma etkisi için çarpışmayı devre dışı bırak
         foreach (Collider col in GetComponents<Collider>())
         {
             if (!col.isTrigger)
@@ -178,7 +163,6 @@ public class PushableObject : MonoBehaviour
             }
         }
 
-        // Obje tutma sesi çal
         if (SoundManager.Instance != null)
         {
             SoundManager.Instance.Play("ObjectPickup");
@@ -187,23 +171,23 @@ public class PushableObject : MonoBehaviour
 
     private void ReleaseObject()
     {
-        // Öncelikle isBeingHeld'i false yap ki tekrarlı çağrılmasın
+        if (!isBeingHeld) return;
+
         isBeingHeld = false;
         holdPoint = null;
         
-        // Zıplama özelliğini aktif et
-        PlayerController tempController = playerController;
-        if (tempController != null)
+        if (playerController != null)
         {
-            tempController.SetHoldingObject(false);
-            Debug.Log("PushableObject: Obje bırakıldı, zıplama aktif edildi");
+            playerController.SetHoldingObject(false);
         }
         
-        // Rigidbody ayarlarını geri al
         rb.isKinematic = wasKinematic;
         rb.useGravity = true;
+        rb.linearVelocity = Vector3.zero;
+        rb.angularVelocity = Vector3.zero;
         
-        // Çarpışmaları yeniden etkinleştir
+        transform.rotation = originalRotation;
+        
         foreach (Collider col in GetComponents<Collider>())
         {
             if (!col.isTrigger)
@@ -212,24 +196,13 @@ public class PushableObject : MonoBehaviour
             }
         }
         
-        // Bırakıldığında hızı oyuncunun mevcut hareket yönüne ayarla
-        if (inputManager != null && playerTransform != null)
-        {
-            Vector3 playerVelocity = inputManager.GetMovementInput() * 2f; // Biraz hız ekleyelim
-            if (playerVelocity.magnitude > 0.1f)
-            {
-                rb.linearVelocity = new Vector3(playerVelocity.x, 0, playerVelocity.z);
-            }
-        }
-        
-        // Obje bırakma sesi çal
         if (SoundManager.Instance != null)
         {
             SoundManager.Instance.Play("ObjectDrop");
         }
     }
 
-    private System.Collections.IEnumerator InteractionCooldown()
+    private IEnumerator InteractionCooldown()
     {
         canInteract = false;
         yield return new WaitForSeconds(interactionCooldown);

@@ -17,6 +17,11 @@ public class PlayerController : MonoBehaviour
     public float deceleration = 10f;
     public float maxRunSpeed = 1f;
 
+    [SerializeField] private float holdDistance = 2f;
+    [SerializeField] private Transform holdPosition;
+    private GameObject heldObject;
+    private bool isHolding = false;
+
     private List<(Vector3 position, Quaternion rotation, float timestamp)> clonePositions = new List<(Vector3, Quaternion, float)>();
     private List<GameObject> activeMarkers = new List<GameObject>();
     private bool isRewinding = false;
@@ -56,13 +61,13 @@ public class PlayerController : MonoBehaviour
 
     private void CreateHoldPoints()
     {
-        // Ön, arka, sağ ve sol tutma noktaları
+        // Tutma noktaları sadece X ve Z ekseninde
         Vector3[] positions = new Vector3[]
         {
-            new Vector3(0, 0, 1f),  // Ön
-            new Vector3(0, 0, -1f), // Arka
-            new Vector3(1f, 0, 0),  // Sağ
-            new Vector3(-1f, 0, 0)  // Sol
+            new Vector3(0, 0, 1f),    // Ön
+            new Vector3(0, 0, -1f),   // Arka
+            new Vector3(1f, 0, 0),    // Sağ
+            new Vector3(-1f, 0, 0)    // Sol
         };
 
         for (int i = 0; i < 4; i++)
@@ -86,13 +91,22 @@ public class PlayerController : MonoBehaviour
 
         Transform nearestPoint = holdPoints[0];
         float minDistance = float.MaxValue;
+        Vector3 playerForward = transform.forward;
 
         foreach (Transform point in holdPoints)
         {
             if (point == null) continue;
             
-            float distance = Vector3.Distance(objectPosition, point.position);
-            if (distance < minDistance)
+            // Sadece X ve Z eksenindeki mesafeyi hesapla
+            Vector3 pointPos = new Vector3(point.position.x, 0, point.position.z);
+            Vector3 objPos = new Vector3(objectPosition.x, 0, objectPosition.z);
+            float distance = Vector3.Distance(objPos, pointPos);
+            
+            Vector3 directionToPoint = (pointPos - new Vector3(transform.position.x, 0, transform.position.z)).normalized;
+            float dotProduct = Vector3.Dot(playerForward, directionToPoint);
+            
+            // Oyuncunun baktığı yöne yakın noktaları tercih et
+            if (dotProduct > 0.5f && distance < minDistance)
             {
                 minDistance = distance;
                 nearestPoint = point;
@@ -114,6 +128,19 @@ public class PlayerController : MonoBehaviour
 
         HandleMovement();
         HandleCloneAndRewind();
+
+        // Eşya tutma kontrolü
+        if (Input.GetKeyDown(KeyCode.E))
+        {
+            if (!isHolding)
+            {
+                TryPickupObject();
+            }
+            else
+            {
+                DropObject();
+            }
+        }
     }
 
     private void HandleMovement()
@@ -386,5 +413,34 @@ public class PlayerController : MonoBehaviour
     public void SetHoldingObject(bool holding)
     {
         isHoldingObject = holding;
+    }
+
+    private void TryPickupObject()
+    {
+        RaycastHit hit;
+        if (Physics.Raycast(transform.position, transform.forward, out hit, holdDistance))
+        {
+            if (hit.collider.CompareTag("Pushable"))
+            {
+                heldObject = hit.collider.gameObject;
+                heldObject.GetComponent<Rigidbody>().isKinematic = true;
+                heldObject.transform.parent = holdPosition;
+                heldObject.transform.position = holdPosition.position;
+                isHolding = true;
+                SetHoldingObject(true);
+            }
+        }
+    }
+
+    private void DropObject()
+    {
+        if (heldObject != null)
+        {
+            heldObject.transform.parent = null;
+            heldObject.GetComponent<Rigidbody>().isKinematic = false;
+            isHolding = false;
+            heldObject = null;
+            SetHoldingObject(false);
+        }
     }
 }

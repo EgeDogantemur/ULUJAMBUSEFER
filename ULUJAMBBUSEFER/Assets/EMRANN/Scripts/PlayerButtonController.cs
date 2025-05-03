@@ -13,15 +13,15 @@ public class PlayerButtonAction
     public Vector3 moveDirection;
     public float moveDistance;
     public float moveSpeed;
-    public bool resetOnRelease = true; // Buton bırakıldığında eski haline dönsün mü?
-    public bool singleUse = false; // Sadece bir kere kullanılsın mı? (resetOnRelease false ise geçerli)
+    public bool resetOnRelease = true;
+    public bool singleUse = false;
 
     // Ölçek ayarları
     public Vector3 scaleAxis;
     public float scaleAmount;
     public float scaleSpeed;
-    public bool resetScaleOnRelease = true; // Buton bırakıldığında eski boyutuna dönsün mü?
-    public bool singleUseScale = false; // Sadece bir kere ölçeklensin mi? (resetScaleOnRelease false ise geçerli)
+    public bool resetScaleOnRelease = true;
+    public bool singleUseScale = false;
 }
 
 public class PlayerButtonController : MonoBehaviour
@@ -39,9 +39,13 @@ public class PlayerButtonController : MonoBehaviour
         originalPosition = transform.position;
         pressedPosition = originalPosition - new Vector3(0, pressDepth, 0);
         
-        // Her aksiyon için kullanım durumunu takip et
         foreach (var action in actions)
         {
+            // Hedef objenin Pushable tag'ine sahip olup olmadığını kontrol et
+            if (action.targetObject != null && !action.targetObject.CompareTag("Pushable"))
+            {
+                Debug.LogWarning($"Uyarı: {action.targetObject.name} objesi Pushable tag'ine sahip değil! Bu obje butondan etkilenmeyecek.");
+            }
             actionUsed[action] = false;
         }
     }
@@ -96,7 +100,13 @@ public class PlayerButtonController : MonoBehaviour
         {
             if (action.targetObject == null) continue;
 
-            // Eğer singleUse true ise ve daha önce kullanıldıysa, atla
+            // Hedef objenin Pushable tag'ine sahip olup olmadığını kontrol et
+            if (!action.targetObject.CompareTag("Pushable"))
+            {
+                continue;
+            }
+
+            // Tek kullanımlık kontrolleri
             if ((action.singleUse && !action.resetOnRelease && actionUsed[action]) ||
                 (action.singleUseScale && !action.resetScaleOnRelease && actionUsed[action]))
             {
@@ -125,7 +135,6 @@ public class PlayerButtonController : MonoBehaviour
                     break;
             }
 
-            // Eğer basıldıysa ve singleUse true ise, kullanıldı olarak işaretle
             if (isPressing)
             {
                 if (action.singleUse && !action.resetOnRelease)
@@ -199,4 +208,4 @@ public class PlayerButtonController : MonoBehaviour
             yield return null;
         }
     }
-} 
+}

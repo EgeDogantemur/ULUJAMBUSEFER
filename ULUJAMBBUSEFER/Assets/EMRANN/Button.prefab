@@ -126,18 +126,6 @@ MonoBehaviour:
     actionType: 0
     moveDirection: {x: 0, y: -1, z: 0}
     moveDistance: 2
-    moveSpeed: 0.2
-    resetOnRelease: 1
-    singleUse: 0
-    scaleAxis: {x: 0, y: 0, z: 0}
-    scaleAmount: 0
-    scaleSpeed: 0
-    resetScaleOnRelease: 1
-    singleUseScale: 0
-  - targetObject: {fileID: 0}
-    actionType: 0
-    moveDirection: {x: 0, y: 1, z: 0}
-    moveDistance: 2
     moveSpeed: 0.5
     resetOnRelease: 1
     singleUse: 0
