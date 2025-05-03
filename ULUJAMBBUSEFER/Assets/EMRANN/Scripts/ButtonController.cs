@@ -48,33 +48,21 @@ public class ButtonController : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        if (!isPressed && other.CompareTag("Pushable"))
+        if (!isPressed && other.CompareTag("Player"))
         {
             isPressed = true;
             StartCoroutine(PressButton());
             ExecuteActions(true);
-            
-            // Buton basma sesi çal
-            if (SoundManager.Instance != null)
-            {
-                SoundManager.Instance.Play("ButtonPress");
-            }
         }
     }
 
     private void OnTriggerExit(Collider other)
     {
-        if (isPressed && other.CompareTag("Pushable"))
+        if (isPressed && other.CompareTag("Player"))
         {
             isPressed = false;
             StartCoroutine(ReleaseButton());
             ExecuteActions(false);
-            
-            // Buton bırakma sesi çal (aynı ses efekti kullanılabilir)
-            if (SoundManager.Instance != null)
-            {
-                SoundManager.Instance.Play("ButtonPress");
-            }
         }
     }
 
@@ -128,10 +116,10 @@ public class ButtonController : MonoBehaviour
                 case ButtonAction.ActionType.Bridge:
                     if (isPressing)
                     {
-                        DestructibleBridge bridge = action.targetObject.GetComponent<DestructibleBridge>();
+                        SimpleDestructibleBridge bridge = action.targetObject.GetComponent<SimpleDestructibleBridge>();
                         if (bridge != null)
                         {
-                            bridge.RestoreBridge();
+                            bridge.gameObject.SetActive(true);
                         }
                     }
                     break;

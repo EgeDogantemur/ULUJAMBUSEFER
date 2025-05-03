@@ -116,10 +116,10 @@ public class PlayerButtonController : MonoBehaviour
                 case PlayerButtonAction.ActionType.Bridge:
                     if (isPressing)
                     {
-                        DestructibleBridge bridge = action.targetObject.GetComponent<DestructibleBridge>();
+                        SimpleDestructibleBridge bridge = action.targetObject.GetComponent<SimpleDestructibleBridge>();
                         if (bridge != null)
                         {
-                            bridge.RestoreBridge();
+                            bridge.gameObject.SetActive(true);
                         }
                     }
                     break;

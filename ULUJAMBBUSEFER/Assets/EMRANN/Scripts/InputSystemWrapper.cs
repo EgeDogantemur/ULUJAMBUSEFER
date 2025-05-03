@@ -31,12 +31,12 @@ public class InputSystemWrapper : MonoBehaviour
     private void Update()
     {
         // Hareket inputu
-        float horizontal = Input.GetAxis("Horizontal");
-        float vertical = Input.GetAxis("Vertical");
-        movementInput = new Vector3(horizontal, 0f, vertical);
+        float horizontal = Input.GetAxisRaw("Horizontal");
+        float vertical = Input.GetAxisRaw("Vertical");
+        movementInput = new Vector3(horizontal, 0f, vertical).normalized;
 
         // Zıplama inputu
-        jumpPressed = Input.GetKeyDown(KeyCode.Space);
+        jumpPressed = Input.GetButtonDown("Jump");
         jumpHeld = Input.GetKey(KeyCode.Space);
 
         // Etkileşim inputu (E tuşu)

@@ -29,6 +29,7 @@ public class SoundManager : MonoBehaviour
     public AudioClip objectDropSound;
     public AudioClip jumpSound;
     public AudioClip bridgeDestroySound;
+    public AudioClip bridgeRespawnSound;
     
     [Range(0f, 1f)]
     public float effectsVolume = 0.5f;
@@ -42,77 +43,82 @@ public class SoundManager : MonoBehaviour
         {
             Instance = this;
             DontDestroyOnLoad(gameObject);
-            
-            // Sözlüğü oluştur
-            foreach (SoundEffect sound in soundEffects)
-            {
-                sound.source = gameObject.AddComponent<AudioSource>();
-                sound.source.clip = sound.clip;
-                sound.source.volume = sound.volume * effectsVolume;
-                sound.source.pitch = sound.pitch;
-                sound.source.loop = sound.loop;
-                
-                if (!soundDictionary.ContainsKey(sound.name))
-                {
-                    soundDictionary.Add(sound.name, sound);
-                }
-            }
-            
-            // Öntanımlı sesleri ekle
-            AddDefaultSounds();
+            InitializeSounds();
         }
         else
         {
             Destroy(gameObject);
         }
     }
-    
-    private void AddDefaultSounds()
+
+    private void InitializeSounds()
     {
-        AddDefaultSound("CloneCreate", cloneCreateSound);
-        AddDefaultSound("CloneRewind", cloneRewindSound);
-        AddDefaultSound("ButtonPress", buttonPressSound);
-        AddDefaultSound("ObjectPickup", objectPickupSound);
-        AddDefaultSound("ObjectDrop", objectDropSound);
-        AddDefaultSound("Jump", jumpSound);
-        AddDefaultSound("BridgeDestroy", bridgeDestroySound);
+        // Temel ses efektlerini oluştur
+        CreateBasicSoundEffect("CloneCreate", cloneCreateSound);
+        CreateBasicSoundEffect("CloneRewind", cloneRewindSound);
+        CreateBasicSoundEffect("ButtonPress", buttonPressSound);
+        CreateBasicSoundEffect("ObjectPickup", objectPickupSound);
+        CreateBasicSoundEffect("ObjectDrop", objectDropSound);
+        CreateBasicSoundEffect("Jump", jumpSound);
+        CreateBasicSoundEffect("BridgeDestroy", bridgeDestroySound);
+        CreateBasicSoundEffect("BridgeRespawn", bridgeRespawnSound);
+
+        // Diğer ses efektlerini ekle
+        foreach (SoundEffect sound in soundEffects)
+        {
+            if (!string.IsNullOrEmpty(sound.name) && sound.clip != null)
+            {
+                GameObject soundObject = new GameObject($"Sound_{sound.name}");
+                soundObject.transform.SetParent(transform);
+                
+                AudioSource source = soundObject.AddComponent<AudioSource>();
+                source.clip = sound.clip;
+                source.volume = sound.volume * effectsVolume;
+                source.pitch = sound.pitch;
+                source.loop = sound.loop;
+                source.playOnAwake = false;
+                
+                sound.source = source;
+                
+                if (!soundDictionary.ContainsKey(sound.name))
+                {
+                    soundDictionary.Add(sound.name, sound);
+                }
+            }
+        }
     }
-    
-    private void AddDefaultSound(string name, AudioClip clip)
+
+    private void CreateBasicSoundEffect(string name, AudioClip clip)
     {
         if (clip != null && !soundDictionary.ContainsKey(name))
         {
+            GameObject soundObject = new GameObject($"Sound_{name}");
+            soundObject.transform.SetParent(transform);
+            
+            AudioSource source = soundObject.AddComponent<AudioSource>();
+            source.clip = clip;
+            source.volume = effectsVolume;
+            source.playOnAwake = false;
+            
             SoundEffect sound = new SoundEffect
             {
                 name = name,
                 clip = clip,
-                volume = 1f,
-                pitch = 1f,
-                loop = false,
-                source = gameObject.AddComponent<AudioSource>()
+                source = source
             };
             
-            sound.source.clip = clip;
-            sound.source.volume = effectsVolume;
-            sound.source.pitch = 1f;
-            sound.source.loop = false;
-            
             soundDictionary.Add(name, sound);
-            soundEffects.Add(sound);
         }
     }
 
     public void Play(string name)
     {
-        if (effectsMuted) return;
-        
-        if (soundDictionary.TryGetValue(name, out SoundEffect sound))
+        if (!effectsMuted && soundDictionary.TryGetValue(name, out SoundEffect sound))
         {
-            sound.source.Play();
-        }
-        else
-        {
-            Debug.LogWarning($"SoundManager: Ses bulunamadı - {name}");
+            if (sound.source != null)
+            {
+                sound.source.Play();
+            }
         }
     }
 
@@ -120,16 +126,22 @@ public class SoundManager : MonoBehaviour
     {
         if (soundDictionary.TryGetValue(name, out SoundEffect sound))
         {
-            sound.source.Stop();
+            if (sound.source != null)
+            {
+                sound.source.Stop();
+            }
         }
     }
 
     public void SetEffectsVolume(float volume)
     {
         effectsVolume = Mathf.Clamp01(volume);
-        foreach (var sound in soundEffects)
+        foreach (var sound in soundDictionary.Values)
         {
-            sound.source.volume = sound.volume * effectsVolume;
+            if (sound.source != null)
+            {
+                sound.source.volume = sound.volume * effectsVolume;
+            }
         }
         
         PlayerPrefs.SetFloat("EffectsVolume", effectsVolume);
@@ -139,16 +151,19 @@ public class SoundManager : MonoBehaviour
     public void ToggleEffects()
     {
         effectsMuted = !effectsMuted;
-        foreach (var sound in soundEffects)
+        foreach (var sound in soundDictionary.Values)
         {
-            sound.source.mute = effectsMuted;
+            if (sound.source != null)
+            {
+                sound.source.mute = effectsMuted;
+            }
         }
         
         PlayerPrefs.SetInt("EffectsMuted", effectsMuted ? 1 : 0);
         PlayerPrefs.Save();
     }
     
-    public bool AreEffectsMuted()
+    public bool IsEffectsMuted()
     {
         return effectsMuted;
     }

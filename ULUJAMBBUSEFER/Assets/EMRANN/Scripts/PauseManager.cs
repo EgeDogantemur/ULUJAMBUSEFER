@@ -15,6 +15,7 @@ public class PauseManager : MonoBehaviour
     public Button exitButton;
 
     private bool isPaused = false;
+    private InputSystemWrapper inputManager;
 
     private void Awake()
     {
@@ -30,6 +31,13 @@ public class PauseManager : MonoBehaviour
             return;
         }
 
+        // Input Manager referansını al
+        inputManager = InputSystemWrapper.Instance;
+        if (inputManager == null)
+        {
+            Debug.LogError("InputSystemWrapper bulunamadı!");
+        }
+
         SetupUIReferences();
     }
 
@@ -40,18 +48,32 @@ public class PauseManager : MonoBehaviour
 
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
-        if (scene.name == "GameScene")
+        // Ana menüde pause menu'yü devre dışı bırak
+        if (scene.name == "MainMenu")
         {
-            // Referansları sıfırla
-            pauseMenuUI = null;
-            volumeSlider = null;
-            muteButton = null;
-            resumeButton = null;
-            restartButton = null;
-            exitButton = null;
+            enabled = false;
+            return;
+        }
+        
+        enabled = true;
+        
+        // Referansları sıfırla
+        pauseMenuUI = null;
+        volumeSlider = null;
+        muteButton = null;
+        resumeButton = null;
+        restartButton = null;
+        exitButton = null;
 
-            // Yeni referansları bul
-            SetupUIReferences();
+        // Yeni referansları bul
+        SetupUIReferences();
+        
+        // Oyun başlangıcında pause menu'yü kapat
+        if (pauseMenuUI != null)
+        {
+            pauseMenuUI.SetActive(false);
+            Time.timeScale = 1f;
+            isPaused = false;
         }
     }
 
@@ -77,6 +99,7 @@ public class PauseManager : MonoBehaviour
             else
             {
                 Debug.LogError("PauseMenu bulunamadı!");
+                return;
             }
         }
 
@@ -84,119 +107,77 @@ public class PauseManager : MonoBehaviour
         if (pauseMenuUI != null)
         {
             // Resume Button
-            if (resumeButton == null)
+            Transform resumeButtonTransform = pauseMenuUI.transform.Find("ResumeButton");
+            if (resumeButtonTransform != null)
             {
-                Transform resumeButtonTransform = pauseMenuUI.transform.Find("ResumeButton");
-                if (resumeButtonTransform != null)
+                resumeButton = resumeButtonTransform.GetComponent<Button>();
+                if (resumeButton != null)
                 {
-                    resumeButton = resumeButtonTransform.GetComponent<Button>();
-                    Debug.Log("ResumeButton bulundu: " + resumeButton.name);
-                }
-                else
-                {
-                    Debug.LogError("ResumeButton bulunamadı!");
+                    resumeButton.onClick.RemoveAllListeners();
+                    resumeButton.onClick.AddListener(Resume);
+                    Debug.Log("ResumeButton bulundu ve ayarlandı");
                 }
             }
 
             // Restart Button
-            if (restartButton == null)
+            Transform restartButtonTransform = pauseMenuUI.transform.Find("RestartButton");
+            if (restartButtonTransform != null)
             {
-                Transform restartButtonTransform = pauseMenuUI.transform.Find("RestartButton");
-                if (restartButtonTransform != null)
+                restartButton = restartButtonTransform.GetComponent<Button>();
+                if (restartButton != null)
                 {
-                    restartButton = restartButtonTransform.GetComponent<Button>();
-                    Debug.Log("RestartButton bulundu: " + restartButton.name);
-                }
-                else
-                {
-                    Debug.LogError("RestartButton bulunamadı!");
+                    restartButton.onClick.RemoveAllListeners();
+                    restartButton.onClick.AddListener(Restart);
+                    Debug.Log("RestartButton bulundu ve ayarlandı");
                 }
             }
 
             // Exit Button
-            if (exitButton == null)
+            Transform exitButtonTransform = pauseMenuUI.transform.Find("ExitButton");
+            if (exitButtonTransform != null)
             {
-                Transform exitButtonTransform = pauseMenuUI.transform.Find("ExitButton");
-                if (exitButtonTransform != null)
+                exitButton = exitButtonTransform.GetComponent<Button>();
+                if (exitButton != null)
                 {
-                    exitButton = exitButtonTransform.GetComponent<Button>();
-                    Debug.Log("ExitButton bulundu: " + exitButton.name);
-                }
-                else
-                {
-                    Debug.LogError("ExitButton bulunamadı!");
+                    exitButton.onClick.RemoveAllListeners();
+                    exitButton.onClick.AddListener(ExitToMainMenu);
+                    Debug.Log("ExitButton bulundu ve ayarlandı");
                 }
             }
 
             // Volume Slider
-            if (volumeSlider == null)
+            Transform volumeSliderTransform = pauseMenuUI.transform.Find("VolumeSlider");
+            if (volumeSliderTransform != null)
             {
-                Transform volumeSliderTransform = pauseMenuUI.transform.Find("VolumeSlider");
-                if (volumeSliderTransform != null)
+                volumeSlider = volumeSliderTransform.GetComponent<Slider>();
+                if (volumeSlider != null)
                 {
-                    volumeSlider = volumeSliderTransform.GetComponent<Slider>();
-                    Debug.Log("VolumeSlider bulundu: " + volumeSlider.name);
-                }
-                else
-                {
-                    Debug.LogError("VolumeSlider bulunamadı!");
+                    volumeSlider.value = PlayerPrefs.GetFloat("MusicVolume", 0.5f);
+                    volumeSlider.onValueChanged.RemoveAllListeners();
+                    volumeSlider.onValueChanged.AddListener(OnVolumeChanged);
+                    Debug.Log("VolumeSlider bulundu ve ayarlandı");
                 }
             }
 
             // Mute Button
-            if (muteButton == null)
+            Transform muteButtonTransform = pauseMenuUI.transform.Find("MuteButton");
+            if (muteButtonTransform != null)
             {
-                Transform muteButtonTransform = pauseMenuUI.transform.Find("MuteButton");
-                if (muteButtonTransform != null)
+                muteButton = muteButtonTransform.GetComponent<Button>();
+                if (muteButton != null)
                 {
-                    muteButton = muteButtonTransform.GetComponent<Button>();
-                    Debug.Log("MuteButton bulundu: " + muteButton.name);
-                }
-                else
-                {
-                    Debug.LogError("MuteButton bulunamadı!");
+                    UpdateMuteButtonText();
+                    muteButton.onClick.RemoveAllListeners();
+                    muteButton.onClick.AddListener(ToggleMute);
+                    Debug.Log("MuteButton bulundu ve ayarlandı");
                 }
             }
-        }
-
-        // Butonları bağla
-        if (resumeButton != null)
-        {
-            resumeButton.onClick.RemoveAllListeners();
-            resumeButton.onClick.AddListener(Resume);
-        }
-
-        if (restartButton != null)
-        {
-            restartButton.onClick.RemoveAllListeners();
-            restartButton.onClick.AddListener(Restart);
-        }
-
-        if (exitButton != null)
-        {
-            exitButton.onClick.RemoveAllListeners();
-            exitButton.onClick.AddListener(ExitToMainMenu);
-        }
-
-        // Ses ayarlarını yükle
-        if (volumeSlider != null)
-        {
-            volumeSlider.value = PlayerPrefs.GetFloat("MusicVolume", 0.5f);
-            volumeSlider.onValueChanged.RemoveAllListeners();
-            volumeSlider.onValueChanged.AddListener(OnVolumeChanged);
-        }
-
-        if (muteButton != null)
-        {
-            UpdateMuteButtonText();
-            muteButton.onClick.RemoveAllListeners();
-            muteButton.onClick.AddListener(ToggleMute);
         }
     }
 
     private void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Escape))
+        if (inputManager != null && inputManager.GetPausePressed())
         {
             if (isPaused)
                 Resume();
@@ -207,18 +188,32 @@ public class PauseManager : MonoBehaviour
 
     public void Resume()
     {
-        isPaused = false;
-        Time.timeScale = 1f;
         if (pauseMenuUI != null)
+        {
+            isPaused = false;
+            Time.timeScale = 1f;
             pauseMenuUI.SetActive(false);
+            
+            if (SoundManager.Instance != null)
+            {
+                SoundManager.Instance.Play("ButtonPress");
+            }
+        }
     }
 
     public void Pause()
     {
-        isPaused = true;
-        Time.timeScale = 0f;
         if (pauseMenuUI != null)
+        {
+            isPaused = true;
+            Time.timeScale = 0f;
             pauseMenuUI.SetActive(true);
+            
+            if (SoundManager.Instance != null)
+            {
+                SoundManager.Instance.Play("ButtonPress");
+            }
+        }
     }
 
     public void Restart()
@@ -233,6 +228,11 @@ public class PauseManager : MonoBehaviour
         else
         {
             SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+        }
+        
+        if (SoundManager.Instance != null)
+        {
+            SoundManager.Instance.Play("ButtonPress");
         }
     }
 
@@ -249,6 +249,11 @@ public class PauseManager : MonoBehaviour
         else
         {
             SceneManager.LoadScene("MainMenu");
+        }
+        
+        if (SoundManager.Instance != null)
+        {
+            SoundManager.Instance.Play("ButtonPress");
         }
     }
 
@@ -268,6 +273,11 @@ public class PauseManager : MonoBehaviour
         {
             MusicManager.Instance.ToggleMusic();
             UpdateMuteButtonText();
+            
+            if (SoundManager.Instance != null)
+            {
+                SoundManager.Instance.Play("ButtonPress");
+            }
         }
     }
 

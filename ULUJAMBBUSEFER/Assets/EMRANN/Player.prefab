@@ -74,7 +74,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   moveSpeed: 3
-  CloneMarkerPrefab: {fileID: 843306661315385692, guid: e58f3060cd175584487143765952c03b, type: 3}
+  CloneMarkerPrefab: {fileID: 1582790530254833072, guid: 23845cca924d8dd47841b09a9f5e5b24, type: 3}
   rewindSpeed: 10
   jumpForce: 5
   cloneLifetime: 8
@@ -114,7 +114,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 0}
+  - {fileID: 2100000, guid: d631c16186e5a274a829e9eed15d0956, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0

@@ -52,7 +52,7 @@ public class MainMenu : MonoBehaviour
         }
         else
         {
-            SceneManager.LoadScene("GameScene");
+            SceneManager.LoadScene("Level1");
         }
     }
 
