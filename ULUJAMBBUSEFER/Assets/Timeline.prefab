@@ -1,0 +1,63 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &6695813402536229561
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 4862331559474476533}
+  - component: {fileID: 1729933383106378228}
+  m_Layer: 0
+  m_Name: Timeline
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &4862331559474476533
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6695813402536229561}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: 0.70710576, z: -0, w: 0.70710784}
+  m_LocalPosition: {x: -7.0605097, y: 3.249427, z: -0.8794039}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 90, z: 0}
+--- !u!320 &1729933383106378228
+PlayableDirector:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6695813402536229561}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_PlayableAsset: {fileID: 11400000, guid: 668ff2acf865b834e908f3425d097e6a, type: 2}
+  m_InitialState: 0
+  m_WrapMode: 2
+  m_DirectorUpdateMode: 1
+  m_InitialTime: 0
+  m_SceneBindings:
+  - key: {fileID: 9094732543091920019, guid: 668ff2acf865b834e908f3425d097e6a, type: 2}
+    value: {fileID: 0}
+  - key: {fileID: 4340519208766931232, guid: 668ff2acf865b834e908f3425d097e6a, type: 2}
+    value: {fileID: 0}
+  - key: {fileID: 6426041342666282628, guid: 668ff2acf865b834e908f3425d097e6a, type: 2}
+    value: {fileID: 0}
+  - key: {fileID: 2355801088681299999, guid: 668ff2acf865b834e908f3425d097e6a, type: 2}
+    value: {fileID: 0}
+  - key: {fileID: -9113161026886718044, guid: 668ff2acf865b834e908f3425d097e6a, type: 2}
+    value: {fileID: 0}
+  - key: {fileID: 6272643664798984437, guid: 668ff2acf865b834e908f3425d097e6a, type: 2}
+    value: {fileID: 0}
+  m_ExposedReferences:
+    m_References: []

@@ -12,6 +12,9 @@ EditorBuildSettings:
     path: Assets/Scenes/SampleScene.unity
     guid: 99c9720ab356a0642a771bea13969a05
   - enabled: 1
+    path: Assets/LevelScenes/labdeneme.unity
+    guid: 7178b0411790192429d4fd8029e9851b
+  - enabled: 1
     path: Assets/LevelScenes/Level1.unity
     guid: d5719553c8efe6b499ee27b3133749b0
   - enabled: 1
