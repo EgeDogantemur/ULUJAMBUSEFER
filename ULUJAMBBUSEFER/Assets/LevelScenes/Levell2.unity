@@ -946,7 +946,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4122229877174008127, guid: 1cb437fe172641e4192426390769d699, type: 3}
       propertyPath: levelTime
-      value: 120
+      value: 60
       objectReference: {fileID: 0}
     - target: {fileID: 4122229877174008127, guid: 1cb437fe172641e4192426390769d699, type: 3}
       propertyPath: timerText
@@ -2364,6 +2364,10 @@ PrefabInstance:
     - target: {fileID: 422289215590122785, guid: 4c67ff8a539852948ada06a21f230421, type: 3}
       propertyPath: m_Mass
       value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 422289215590122785, guid: 4c67ff8a539852948ada06a21f230421, type: 3}
+      propertyPath: m_Constraints
+      value: 112
       objectReference: {fileID: 0}
     - target: {fileID: 6054122498459364741, guid: 4c67ff8a539852948ada06a21f230421, type: 3}
       propertyPath: m_Name
@@ -4766,7 +4770,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8bbd6b229fda6304ba3136fda52c4b10, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  respawnDelay: 3
+  respawnDelay: 15
 --- !u!1 &1549168165
 GameObject:
   m_ObjectHideFlags: 0
@@ -6123,6 +6127,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 422289215590122785, guid: 4c67ff8a539852948ada06a21f230421, type: 3}
+      propertyPath: m_Constraints
+      value: 112
+      objectReference: {fileID: 0}
     - target: {fileID: 6054122498459364741, guid: 4c67ff8a539852948ada06a21f230421, type: 3}
       propertyPath: m_Name
       value: PushableCube (1)
