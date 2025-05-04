@@ -52,7 +52,7 @@ public class MainMenu : MonoBehaviour
         }
         else
         {
-            SceneManager.LoadScene("Level1");
+            SceneManager.LoadScene("Lab");
         }
     }
 

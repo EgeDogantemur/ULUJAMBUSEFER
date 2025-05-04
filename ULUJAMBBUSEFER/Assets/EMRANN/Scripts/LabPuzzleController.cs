@@ -152,7 +152,7 @@ public class LabPuzzleController : MonoBehaviour
         }
 
         Debug.Log("Puzzle tamamlandı, Timeline sahnesine geçiliyor...");
-        SceneManager.LoadScene(timelineSceneName);
+        SceneManager.LoadScene("Level1");
     }
 
     // Timeline sahnesinde çağrılacak fonksiyon

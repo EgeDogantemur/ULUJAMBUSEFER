@@ -88,7 +88,7 @@ public class FadeController : MonoBehaviour
         }
     }
 
-    IEnumerator FadeOutCoroutine(bool restart, string sceneName = "GameScene")
+    IEnumerator FadeOutCoroutine(bool restart, string sceneName = "Lab")
     {
         Debug.Log("FadeOut başladı");
         isFading = true;
