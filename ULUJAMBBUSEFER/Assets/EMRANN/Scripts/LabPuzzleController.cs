@@ -1,6 +1,5 @@
 using UnityEngine;
 using UnityEngine.UI;
-using UnityEngine.Playables;
 using UnityEngine.SceneManagement;
 using System.Collections;
 
@@ -12,9 +11,7 @@ public class LabPuzzleController : MonoBehaviour
     public float buttonPressDelay = 0.5f;
 
     [Header("Sahne Geçiş Ayarları")]
-    public string timelineSceneName = "TimelineScene"; // Timeline'ın olduğu sahne adı
     public string nextLevelName = "Level1"; // Sonraki level adı
-    public float levelLoadDelay = 6f; // Timeline bittikten sonra level geçişi için bekleme süresi
 
     [Header("Etkileşim Ayarları")]
     public float interactionDistance = 3f;
@@ -151,15 +148,8 @@ public class LabPuzzleController : MonoBehaviour
             puzzleUI.SetActive(false);
         }
 
-        Debug.Log("Puzzle tamamlandı, Timeline sahnesine geçiliyor...");
-        SceneManager.LoadScene("Level1");
-    }
-
-    // Timeline sahnesinde çağrılacak fonksiyon
-    public static void OnTimelineCompleted()
-    {
-        Debug.Log("Timeline tamamlandı, Level1'e geçiliyor...");
-        SceneManager.LoadScene("Level1");
+        Debug.Log($"Puzzle tamamlandı, {nextLevelName} sahnesine geçiliyor...");
+        SceneManager.LoadScene(nextLevelName);
     }
 
     void OnDrawGizmos()
