@@ -11,10 +11,10 @@ public class LabPuzzleController : MonoBehaviour
     public Button[] buttons;
     public float buttonPressDelay = 0.5f;
 
-    [Header("Timeline Ayarları")]
-    public PlayableDirector timelineDirector;
-    public string nextLevelName = "Level1";
-    public float levelLoadDelay = 6f;
+    [Header("Sahne Geçiş Ayarları")]
+    public string timelineSceneName = "TimelineScene"; // Timeline'ın olduğu sahne adı
+    public string nextLevelName = "Level1"; // Sonraki level adı
+    public float levelLoadDelay = 6f; // Timeline bittikten sonra level geçişi için bekleme süresi
 
     [Header("Etkileşim Ayarları")]
     public float interactionDistance = 3f;
@@ -57,16 +57,6 @@ public class LabPuzzleController : MonoBehaviour
                 int buttonIndex = i;
                 buttons[i].onClick.AddListener(() => OnButtonClick(buttonIndex));
             }
-        }
-
-        // Timeline kontrolü
-        if (timelineDirector == null)
-        {
-            Debug.LogError("Timeline Director atanmamış!");
-        }
-        else
-        {
-            timelineDirector.stopped += OnTimelineStopped;
         }
     }
 
@@ -161,82 +151,15 @@ public class LabPuzzleController : MonoBehaviour
             puzzleUI.SetActive(false);
         }
 
-        if (timelineDirector != null)
-        {
-            Debug.Log($"Timeline Director durumu: {timelineDirector.state}");
-            Debug.Log($"Timeline Director playable asset: {timelineDirector.playableAsset != null}");
-            
-            if (timelineDirector.playableAsset != null)
-            {
-                Debug.Log("Cutscene başlatılıyor...");
-                
-                // Timeline'ı sıfırla
-                timelineDirector.time = 0;
-                timelineDirector.Evaluate();
-                
-                // Timeline'ın durumunu kontrol et
-                if (timelineDirector.state != PlayState.Playing)
-                {
-                    Debug.Log("Timeline başlatılıyor...");
-                    timelineDirector.Play();
-                    
-                    // Timeline'ın başlatıldığından emin ol
-                    StartCoroutine(CheckTimelineState());
-                }
-                else
-                {
-                    Debug.LogWarning("Timeline zaten çalışıyor!");
-                }
-            }
-            else
-            {
-                Debug.LogError("Timeline Director'da Timeline asset'i atanmamış!");
-            }
-        }
-        else
-        {
-            Debug.LogError("Timeline Director atanmamış!");
-        }
+        Debug.Log("Puzzle tamamlandı, Timeline sahnesine geçiliyor...");
+        SceneManager.LoadScene(timelineSceneName);
     }
 
-    private IEnumerator CheckTimelineState()
+    // Timeline sahnesinde çağrılacak fonksiyon
+    public static void OnTimelineCompleted()
     {
-        float checkTime = 0f;
-        float maxCheckTime = 2f; // Maksimum kontrol süresi
-
-        while (checkTime < maxCheckTime)
-        {
-            if (timelineDirector.state == PlayState.Playing)
-            {
-                Debug.Log($"Timeline çalışıyor. Süre: {timelineDirector.time}");
-                yield break;
-            }
-            
-            checkTime += Time.deltaTime;
-            yield return null;
-        }
-
-        Debug.LogError("Timeline başlatılamadı!");
-    }
-
-    private void OnTimelineStopped(PlayableDirector director)
-    {
-        Debug.Log($"Timeline durumu: {director.state}");
-        Debug.Log($"Timeline süresi: {director.time}");
-        Debug.Log("Cutscene bitti, level geçişi yapılıyor...");
-        StartCoroutine(LoadLevelWithDelay(levelLoadDelay));
-    }
-
-    private IEnumerator LoadLevelWithDelay(float delay)
-    {
-        yield return new WaitForSeconds(delay);
-        LoadNextLevel();
-    }
-
-    private void LoadNextLevel()
-    {
-        Debug.Log($"'{nextLevelName}' level'ına geçiliyor...");
-        SceneManager.LoadScene(nextLevelName);
+        Debug.Log("Timeline tamamlandı, Level1'e geçiliyor...");
+        SceneManager.LoadScene("Level1");
     }
 
     void OnDrawGizmos()
