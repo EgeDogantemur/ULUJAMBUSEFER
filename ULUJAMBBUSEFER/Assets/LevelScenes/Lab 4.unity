@@ -1840,10 +1840,6 @@ PrefabInstance:
       propertyPath: m_Name
       value: labPuzzle
       objectReference: {fileID: 0}
-    - target: {fileID: 2105165198429355091, guid: 23978d25387728f4b8ad47739df5ed0c, type: 3}
-      propertyPath: m_IsActive
-      value: 1
-      objectReference: {fileID: 0}
     - target: {fileID: 2843618933973673560, guid: 23978d25387728f4b8ad47739df5ed0c, type: 3}
       propertyPath: m_ConstrainProportionsScale
       value: 1
@@ -4459,7 +4455,9 @@ MonoBehaviour:
   - {fileID: 1119687756}
   - {fileID: 1119687755}
   buttonPressDelay: 0.5
+  timelineSceneName: TimelineScene
   nextLevelName: Level1
+  levelLoadDelay: 6
   interactionDistance: 3
   interactionLayer:
     serializedVersion: 2
